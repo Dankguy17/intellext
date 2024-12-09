@@ -9,9 +9,17 @@ const courseRoutes = require('./routes/courses');
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// Middleware to handle CORS preflight
+app.use(cors({
+  origin: ['http://localhost:8081', 'http://localhost:3000', 'https://intellext.vercel.app'],
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  allowedHeaders: 'Content-Type, Authorization, Accept',
+  credentials: true
+}));
+
+// Body parser middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
@@ -24,10 +32,10 @@ app.use('/api/quizzes', quizRoutes);
 app.use('/api/quiz-attempts', quizAttemptRoutes);
 app.use('/api/courses', courseRoutes);
 
-// Error handling
+// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
+  res.status(500).json({ error: err.message || 'Something went wrong!' });
 });
 
 const port = process.env.PORT || 3000;
